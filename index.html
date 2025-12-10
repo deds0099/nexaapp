@@ -12,7 +12,15 @@
         background-color: #f8fafc;
       }
     </style>
-  <script type="importmap">
+    <!-- Polyfill para evitar erro 'process is not defined' no Vercel/Browser -->
+    <script>
+      window.process = {
+        env: {
+          NODE_ENV: 'production'
+        }
+      };
+    </script>
+    <script type="importmap">
 {
   "imports": {
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.32.0",
@@ -21,15 +29,17 @@
     "react": "https://aistudiocdn.com/react@^19.2.1",
     "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
-    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/app": "https://esm.sh/firebase@10.8.1/app",
+    "firebase/auth": "https://esm.sh/firebase@10.8.1/auth",
+    "firebase/firestore": "https://esm.sh/firebase@10.8.1/firestore",
     "firebase/": "https://esm.sh/firebase@^12.6.0/"
   }
 }
 </script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <!-- PONTO DE ENTRADA DO REACT (Faltava isso para o site carregar) -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

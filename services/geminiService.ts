@@ -55,9 +55,12 @@ const dietPlanSchema: Schema = {
 };
 
 export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => {
-  const apiKey = process.env.API_KEY;
+  // Safe access to process.env to prevent white screen crash
+  const apiKey = (window as any).process?.env?.API_KEY || process.env.API_KEY;
+  
   if (!apiKey) {
-    throw new Error("API Key not found");
+    console.error("API Key is missing. Please check your environment variables.");
+    throw new Error("Configuração de API Key ausente.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
