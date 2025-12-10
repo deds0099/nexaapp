@@ -1,6 +1,11 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { UserProfile, DietPlan } from "../types";
 
+// --- ÁREA DE CONFIGURAÇÃO MANUAL ---
+// Se você não conseguir configurar o Vercel, pode colar sua chave aqui temporariamente (não recomendado para projetos públicos, mas funciona)
+const HARDCODED_API_KEY = ""; 
+// -----------------------------------
+
 // Define the response schema for strict JSON output
 const dietPlanSchema: Schema = {
   type: Type.OBJECT,
@@ -55,13 +60,20 @@ const dietPlanSchema: Schema = {
 };
 
 export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => {
-  // Safe access to process.env to prevent white screen crash
-  // Prioritiza a variável injetada pelo Vercel/Build
-  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
+  console.log("Iniciando geração de dieta...");
   
-  if (!apiKey) {
-    console.error("API Key is missing. Check Vercel Environment Variables.");
-    throw new Error("API Key não configurada. Adicione a variável API_KEY nas configurações do Vercel.");
+  // ORDEM DE PRIORIDADE DA CHAVE:
+  // 1. Chave Hardcoded (código)
+  // 2. Variável de Ambiente (Vercel/Local)
+  // 3. LocalStorage (Configuração manual pela UI)
+  const apiKey = HARDCODED_API_KEY ||
+                 process.env.API_KEY || 
+                 (window as any).process?.env?.API_KEY || 
+                 localStorage.getItem('gemini_api_key');
+  
+  if (!apiKey || apiKey.includes("undefined") || apiKey === "") {
+    console.error("CRITICAL: API Key not found.");
+    throw new Error("MISSING_API_KEY");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -98,15 +110,30 @@ export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => 
       }
     });
 
-    const text = response.text;
+    let text = response.text;
     if (!text) {
-      throw new Error("No response from AI");
+      throw new Error("A IA não retornou nenhum texto.");
     }
 
+    // Limpeza de segurança para garantir JSON válido (remove blocos markdown ```json ... ``` se houver)
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    console.log("Dieta gerada com sucesso!");
     return JSON.parse(text) as DietPlan;
   } catch (error: any) {
-    console.error("Error generating diet plan:", error);
-    // Repassa a mensagem de erro original para ser exibida na UI
-    throw new Error(error.message || "Falha ao gerar dieta.");
+    console.error("Erro detalhado ao gerar dieta:", error);
+    
+    // Tratamento específico de erros comuns
+    if (error.message?.includes("API key")) {
+      throw new Error("INVALID_API_KEY");
+    }
+    if (error.message?.includes("429")) {
+      throw new Error("QUOTA_EXCEEDED");
+    }
+    if (error.message?.includes("503")) {
+      throw new Error("MODEL_OVERLOADED");
+    }
+
+    throw error;
   }
 };

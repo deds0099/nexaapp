@@ -10,7 +10,7 @@ import { generateDietPlan } from './services/geminiService';
 import { dbSaveDiet } from './services/database';
 import { useAuth } from './context/AuthContext';
 import { UserProfile, DietPlan, SavedDiet } from './types';
-import { Salad, Camera, Utensils, LogOut, History as HistoryIcon, User, AlertCircle } from 'lucide-react';
+import { Salad, Camera, Utensils, LogOut, History as HistoryIcon, User, AlertCircle, Settings, Save } from 'lucide-react';
 
 type ViewState = 'HOME' | 'FORM' | 'LOADING' | 'RESULT' | 'ERROR';
 type ActiveTab = 'DIET' | 'SCANNER' | 'HISTORY';
@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('DIET');
   const [dietPlan, setDietPlan] = useState<DietPlan | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [manualApiKey, setManualApiKey] = useState('');
 
   // Se estiver carregando sessão, mostra spinner simples
   if (authLoading) {
@@ -80,6 +81,15 @@ const App: React.FC = () => {
     setDietPlan(savedDiet.plan);
     setActiveTab('DIET');
     setView('RESULT');
+  };
+
+  const handleSaveApiKey = () => {
+    if (manualApiKey.trim().startsWith('AIza')) {
+        localStorage.setItem('gemini_api_key', manualApiKey.trim());
+        window.location.reload();
+    } else {
+        alert("A chave API parece inválida. Ela deve começar com 'AIza'.");
+    }
   };
 
   return (
@@ -183,46 +193,4 @@ const App: React.FC = () => {
 
                 {view === 'ERROR' && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] px-4">
-                    <div className="bg-white p-8 rounded-xl shadow-xl text-center max-w-lg border border-red-100">
-                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <AlertCircle className="w-8 h-8 text-red-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Ops! Algo deu errado.</h3>
-                        <div className="bg-red-50 p-4 rounded-lg text-left mb-6">
-                            <p className="text-red-800 font-mono text-xs break-words">{errorMsg}</p>
-                        </div>
-                        <p className="text-gray-500 text-sm mb-6">
-                            Se o erro mencionar "API Key", adicione a variável de ambiente <code>API_KEY</code> nas configurações do seu projeto no Vercel.
-                        </p>
-                        <button 
-                            onClick={() => setView('FORM')}
-                            className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium shadow-lg shadow-emerald-200"
-                        >
-                            Tentar Novamente
-                        </button>
-                    </div>
-                </div>
-                )}
-            </>
-        )}
-        
-        {activeTab === 'SCANNER' && <FoodScanner />}
-        
-        {activeTab === 'HISTORY' && <History onSelectDiet={handleHistorySelect} />}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 mt-auto">
-        <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
-          <div className="mt-8 md:mt-0 md:order-1 w-full text-center md:text-left">
-            <p className="text-base text-gray-400">
-              &copy; {new Date().getFullYear()} NexaNutri. Todos os direitos reservados.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default App;
+                    <div className="bg-
