@@ -10,7 +10,7 @@ import { generateDietPlan } from './services/geminiService';
 import { dbSaveDiet } from './services/database';
 import { useAuth } from './context/AuthContext';
 import { UserProfile, DietPlan, SavedDiet } from './types';
-import { Salad, Camera, Utensils, LogOut, History as HistoryIcon, User } from 'lucide-react';
+import { Salad, Camera, Utensils, LogOut, History as HistoryIcon, User, AlertCircle } from 'lucide-react';
 
 type ViewState = 'HOME' | 'FORM' | 'LOADING' | 'RESULT' | 'ERROR';
 type ActiveTab = 'DIET' | 'SCANNER' | 'HISTORY';
@@ -44,14 +44,19 @@ const App: React.FC = () => {
       
       // Salva automaticamente no "Banco de Dados" ao gerar com sucesso
       if (user) {
-        await dbSaveDiet(user.id, plan, data);
+        dbSaveDiet(user.id, plan, data).then(() => {
+             // Silencioso ou Toast
+             console.log("Dieta salva");
+        }).catch(err => {
+             console.error("Erro ao salvar no banco (não bloqueante):", err);
+        });
       }
 
       setDietPlan(plan);
       setView('RESULT');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setErrorMsg("Ocorreu um erro ao gerar sua dieta. Verifique sua conexão ou tente novamente.");
+      setErrorMsg(error.message || "Ocorreu um erro ao gerar sua dieta.");
       setView('ERROR');
     }
   };
@@ -178,15 +183,20 @@ const App: React.FC = () => {
 
                 {view === 'ERROR' && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] px-4">
-                    <div className="bg-white p-8 rounded-xl shadow-xl text-center max-w-md">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-2xl">⚠️</span>
+                    <div className="bg-white p-8 rounded-xl shadow-xl text-center max-w-lg border border-red-100">
+                        <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <AlertCircle className="w-8 h-8 text-red-500" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Ops! Algo deu errado.</h3>
-                        <p className="text-gray-500 mb-6">{errorMsg}</p>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Ops! Algo deu errado.</h3>
+                        <div className="bg-red-50 p-4 rounded-lg text-left mb-6">
+                            <p className="text-red-800 font-mono text-xs break-words">{errorMsg}</p>
+                        </div>
+                        <p className="text-gray-500 text-sm mb-6">
+                            Se o erro mencionar "API Key", adicione a variável de ambiente <code>API_KEY</code> nas configurações do seu projeto no Vercel.
+                        </p>
                         <button 
                             onClick={() => setView('FORM')}
-                            className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors"
+                            className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium shadow-lg shadow-emerald-200"
                         >
                             Tentar Novamente
                         </button>

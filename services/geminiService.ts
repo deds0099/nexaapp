@@ -56,11 +56,12 @@ const dietPlanSchema: Schema = {
 
 export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => {
   // Safe access to process.env to prevent white screen crash
-  const apiKey = (window as any).process?.env?.API_KEY || process.env.API_KEY;
+  // Prioritiza a variável injetada pelo Vercel/Build
+  const apiKey = process.env.API_KEY || (window as any).process?.env?.API_KEY;
   
   if (!apiKey) {
-    console.error("API Key is missing. Please check your environment variables.");
-    throw new Error("Configuração de API Key ausente.");
+    console.error("API Key is missing. Check Vercel Environment Variables.");
+    throw new Error("API Key não configurada. Adicione a variável API_KEY nas configurações do Vercel.");
   }
 
   const ai = new GoogleGenAI({ apiKey });
@@ -86,8 +87,9 @@ export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => 
   `;
 
   try {
+    // Usando gemini-2.5-flash para maior estabilidade e velocidade em produção
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -102,8 +104,9 @@ export const generateDietPlan = async (user: UserProfile): Promise<DietPlan> => 
     }
 
     return JSON.parse(text) as DietPlan;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating diet plan:", error);
-    throw error;
+    // Repassa a mensagem de erro original para ser exibida na UI
+    throw new Error(error.message || "Falha ao gerar dieta.");
   }
 };

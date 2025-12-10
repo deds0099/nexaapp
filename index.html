@@ -12,13 +12,13 @@
         background-color: #f8fafc;
       }
     </style>
-    <!-- Polyfill para evitar erro 'process is not defined' no Vercel/Browser -->
+    <!-- Polyfill seguro para process.env -->
     <script>
-      window.process = {
-        env: {
-          NODE_ENV: 'production'
-        }
-      };
+      window.process = window.process || {};
+      window.process.env = window.process.env || {};
+      if (!window.process.env.NODE_ENV) {
+        window.process.env.NODE_ENV = 'production';
+      }
     </script>
     <script type="importmap">
 {
@@ -39,7 +39,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- PONTO DE ENTRADA DO REACT (Faltava isso para o site carregar) -->
+    <!-- PONTO DE ENTRADA DO REACT -->
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
