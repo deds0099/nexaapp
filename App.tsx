@@ -193,4 +193,57 @@ const App: React.FC = () => {
 
                 {view === 'ERROR' && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] px-4">
-                    <div className="bg-
+                    <div className="bg-red-50 p-6 rounded-2xl max-w-md w-full text-center border border-red-100">
+                        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold text-gray-900 mb-2">Ops! Algo deu errado</h2>
+                        <p className="text-gray-600 mb-6">{errorMsg}</p>
+                        
+                        {(errorMsg.includes("API Key") || errorMsg.includes("MISSING_API_KEY") || errorMsg.includes("INVALID_API_KEY")) && (
+                             <div className="mb-6 text-left bg-white p-4 rounded-lg border border-gray-200">
+                                <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">Configuração Rápida (Vercel Fix)</label>
+                                <p className="text-xs text-gray-500 mb-3">Cole sua API Key do Google AI Studio abaixo para corrigir o erro imediatamente:</p>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={manualApiKey}
+                                        onChange={(e) => setManualApiKey(e.target.value)}
+                                        placeholder="Cole aqui: AIzaSy..."
+                                        className="flex-1 text-sm border border-gray-300 rounded px-3 py-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                    <button 
+                                        onClick={handleSaveApiKey}
+                                        className="bg-emerald-600 text-white px-3 py-2 rounded text-sm hover:bg-emerald-700"
+                                    >
+                                        <Save className="w-4 h-4" />
+                                    </button>
+                                </div>
+                             </div>
+                        )}
+
+                        <button 
+                            onClick={() => setView('HOME')}
+                            className="bg-white text-gray-700 border border-gray-300 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                        >
+                            Tentar Novamente
+                        </button>
+                    </div>
+                </div>
+                )}
+            </>
+        )}
+
+        {activeTab === 'SCANNER' && <FoodScanner />}
+        {activeTab === 'HISTORY' && <History onSelectDiet={handleHistorySelect} />}
+      </main>
+      
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 py-8 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+            <p className="text-gray-400 text-sm">© 2024 NexaNutri. Todos os direitos reservados.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;

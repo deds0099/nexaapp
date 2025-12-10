@@ -3,7 +3,7 @@ import { UserProfile, DietPlan } from "../types";
 
 // --- ÁREA DE CONFIGURAÇÃO MANUAL ---
 // Se você não conseguir configurar o Vercel, pode colar sua chave aqui temporariamente (não recomendado para projetos públicos, mas funciona)
-const HARDCODED_API_KEY = ""; 
+const HARDCODED_API_KEY = "AIzaSyBjs3EU4L2SNZOMRpzDcOvI-mQCqDMfTFM"; 
 // -----------------------------------
 
 // Define the response schema for strict JSON output
